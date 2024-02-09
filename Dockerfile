@@ -1,4 +1,4 @@
-FROM python:3.12.1 as development
+FROM python:3.12.1 as build
 
 ENV APP_ENV=dev \
   PYTHONFAULTHANDLER=1 \
@@ -17,9 +17,7 @@ ENV APP_ENV=dev \
 
 RUN --mount=type=cache,target=/var/cache/apt pip install "poetry==$POETRY_VERSION"
 
-WORKDIR /app/
-
-COPY ./backend .
+COPY ./backend /app/.
 COPY ./pyproject.toml .
 
 COPY ./scripts/start.sh /start.sh
@@ -30,11 +28,18 @@ COPY ./scripts/gunicorn_conf.py /gunicorn_conf.py
 COPY ./scripts/start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh
 
-
 ENV PYTHONPATH=/app
 
 EXPOSE 80
 
+FROM build as development
+
+WORKDIR /backend/
+
 RUN --mount=type=cache,target="$POETRY_CACHE_DIR" poetry install --no-interaction --no-ansi
 
-CMD ["/start.sh"]
+FROM development AS production
+
+WORKDIR /backend/
+
+RUN poetry install --no-interaction --no-ansi --no-dev

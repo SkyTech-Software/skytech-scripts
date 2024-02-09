@@ -10,3 +10,8 @@ services:
       - "8999:80"
     networks:
       - postgres_default
+
+networks:
+  postgres_default:
+    name: postgres_default
+    external: true
