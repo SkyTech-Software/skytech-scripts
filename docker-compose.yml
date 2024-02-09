@@ -8,3 +8,5 @@ services:
       - .env
     ports:
       - "8999:80"
+    networks:
+      - postgres_default
