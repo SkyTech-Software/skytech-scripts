@@ -1,0 +1,38 @@
+version: "3"
+services:
+  api:
+    image: license-server:local
+    container_name: license-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app/backend
+    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "80", "--reload",  "--reload-dir", "/app"]
+    env_file:
+      - .env
+    ports:
+      - "8200:80"
+    networks:
+      - backend
+
+  db:
+    image: postgres:16
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=LS
+    ports: 
+      - "5432:5432"
+    volumes: 
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  db-data: {}
+
+networks:
+  backend:
+    name: backend
