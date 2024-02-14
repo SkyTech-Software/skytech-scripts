@@ -43,4 +43,4 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             sudo docker pull softwareskytech/license-server:prod
-            cd projects/license-server && sudo docker compose -f docker-compose.yml up -d
+            cd /var/www/license-server && sudo docker compose -f docker-compose.yml up -d
