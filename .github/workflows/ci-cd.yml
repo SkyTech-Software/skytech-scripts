@@ -27,7 +27,7 @@ jobs:
           file: Dockerfile
           target: production
           push: true
-          tags: softwareskytech/license-server:prod
+          tags: softwareskytech/skytech-scripts:prod
 
   deploy:
     name: deploy
@@ -42,5 +42,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
-            sudo docker pull softwareskytech/license-server:prod
-            cd projects/license-server && sudo docker compose -f docker-compose.yml up -d
+            sudo docker pull softwareskytech/skytech-scripts:prod
+            cd /var/www/skytech-scripts && sudo docker compose -f docker-compose.yml up -d

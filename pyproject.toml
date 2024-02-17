@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "License Server"
+name = "SkyTech-Scripts"
 version = "0.0.0"
 description = ""
 authors = ["SkyTechSoftware"]
@@ -8,27 +8,15 @@ authors = ["SkyTechSoftware"]
 python = "3.12.1"
 fastapi = "0.104.0"
 pydantic-settings = "2.0.3"
+pydantic = "2.6.1"
+python-multipart = "0.0.6"
 uvicorn = "0.20.0"
 gunicorn = "20.1.0"
-sqlmodel = "0.0.14"
-psycopg2 = "2.9.9"
+selenium = "4.17.2"
 
 [tool.poetry.dev-dependencies]
+
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.black]
-line-length = 88
-include = '\.pyi?$'
-
-[tool.isort]
-atomic = true
-profile = "black"
-line_length = 88
-skip_gitignore = true
-
-[tool.pylint.messages-control]
-disable = [
-    "C0114","C0115","C0116","E1101","W0613","W0622"]

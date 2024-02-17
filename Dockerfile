@@ -1,5 +1,10 @@
 FROM python:3.12.1 as build
 
+RUN apt-get update && apt-get install -y \
+    chromium-driver \
+    && rm -rf /var/lib/apt/lists/*
+
+
 ENV APP_ENV=dev \
   PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \

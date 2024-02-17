@@ -1,17 +1,13 @@
 version: "3"
 services:
   api:
-    image: softwareskytech/license-server:prod
-    container_name: license-server
-    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "80"]
+    image: softwareskytech/skytech-scripts:prod
+    container_name: skytech-scripts
+    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "80", "--ssl-keyfile", "/certs/privkey.pem", "--ssl-certfile", "/certs/fullchain.pem"]
     env_file:
       - .env
     ports:
       - "8999:80"
-    networks:
-      - postgres_default
-
-networks:
-  postgres_default:
-    name: postgres_default
-    external: true
+    volumes:
+      - /etc/letsencrypt/ssl/fullchain.pem:/certs/fullchain.pem
+      - /etc/letsencrypt/ssl/privkey.pem:/certs/privkey.pem

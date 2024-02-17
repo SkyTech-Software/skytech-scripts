@@ -5,9 +5,9 @@ from backend.core.config import settings
 
 app = FastAPI(
     title=settings.project_name,
-    openapi_url=f"/ls/api/openapi.json",
-    docs_url="/ls/api/docs",
+    openapi_url=f"/scripts/api/openapi.json",
+    docs_url="/scripts/api/docs",
     dependencies=[Depends(validate_api_key)],
 )
 
-app.include_router(api_router, prefix="/ls/api/v1")
+app.include_router(api_router, prefix="/scripts/api/v1")
