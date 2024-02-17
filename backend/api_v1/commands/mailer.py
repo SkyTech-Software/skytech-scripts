@@ -11,12 +11,12 @@ from fastapi import UploadFile
 
 
 async def send_mail(target_email: str, subject: str, message: str, file: UploadFile | None = None) -> dict:
-    server = smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT)
+    server = smtplib.SMTP(settings.smtp_server, settings.smtp_port)
     server.starttls()
-    server.login(settings.USERNAME, settings.PASSWORD)
+    server.login(settings.mailer_username, settings.mailer_password)
 
     msg = MIMEMultipart()
-    msg["From"] = settings.USERNAME
+    msg["From"] = settings.mailer_username
     msg["To"] = target_email
     msg["Subject"] = subject
     msg.attach(MIMEText(message, "plain"))
@@ -29,7 +29,7 @@ async def send_mail(target_email: str, subject: str, message: str, file: UploadF
         msg.attach(part)
 
     try:
-        server.sendmail(settings.USERNAME, target_email, msg.as_string())
+        server.sendmail(settings.mailer_username, target_email, msg.as_string())
         return True
 
     except SMTPException as e:
