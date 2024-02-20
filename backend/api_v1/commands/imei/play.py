@@ -13,6 +13,7 @@ async def send_request_to_play(imei, target_email):
         if mail_sent:
             return True
     except subprocess.CalledProcessError as e:
+        print(e)
         return False
     
    
