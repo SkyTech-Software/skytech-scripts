@@ -11,6 +11,5 @@ class Settings(BaseSettings):
     smtp_port: int = environ.get("SMTP_PORT")
     mailer_username: str  = environ.get("MAILER_USERNAME")
     mailer_password: str = environ.get("MAILER_PASSWORD")
-    imei_script_path: str = environ.get("IMEI_SCRIPT_PATH")
 
 settings = Settings()

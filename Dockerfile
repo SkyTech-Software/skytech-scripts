@@ -1,13 +1,4 @@
-FROM python:3.12.1 as build
-
-RUN apt-get update && apt-get install -y \
-    wget \
-    xvfb \
-    chromium-driver \
-    && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm google-chrome-stable_current_amd64.deb
+FROM python:3.12.2-slim as build
 
 ENV APP_ENV=dev \
   PYTHONFAULTHANDLER=1 \
@@ -41,10 +32,8 @@ RUN chmod +x /start-reload.sh
 
 FROM build AS development
 
-
 RUN --mount=type=cache,target="$POETRY_CACHE_DIR" poetry install --no-interaction --no-ansi
 
 FROM build AS production
-
 
 RUN poetry install --no-interaction --no-ansi --no-dev
