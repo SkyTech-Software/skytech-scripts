@@ -1,13 +1,9 @@
 FROM python:3.12.1 as build
 
 RUN apt-get update && apt-get install -y \
-    wget \
-    xvfb \
     chromium-driver \
-    && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm google-chrome-stable_current_amd64.deb
+    && rm -rf /var/lib/apt/lists/*
+
 
 ENV APP_ENV=dev \
   PYTHONFAULTHANDLER=1 \
