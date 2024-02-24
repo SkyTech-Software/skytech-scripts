@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from backend.api_v1.commands.mailer import send_mail
-from fastapi import UploadFile
-from backend.schema.mail import MailResponse
+from backend.schema.mail import MailResponse, Mail
 
 router = APIRouter()
 
 
-@router.post("/send-mail")
-async def send_email(
-    target_email: str, subject: str, message: str, file: UploadFile = None
-) -> MailResponse:
+@router.post("/send-mail", response_model=MailResponse)
+async def send_email(mail_input: Mail) -> MailResponse:
     response = await send_mail(
-        target_email=target_email, subject=subject, message=message, file=file
+        target_email=mail_input.to_email,
+        subject=mail_input.subject,
+        message=mail_input.message,
     )
     return response

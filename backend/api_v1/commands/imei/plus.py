@@ -1,6 +1,7 @@
 import requests
 
-def send_request_to_plus(imei, email):
+
+def send_request_to_plus(imei: int, email: str) -> bool:
     try:
         plus_email = email.replace("@", "%40")
         response_plus = requests.post(
@@ -11,6 +12,5 @@ def send_request_to_plus(imei, email):
         response_plus.raise_for_status()
         return True
 
-    except requests.RequestException as e:
-        # Log error
+    except requests.RequestException:
         return False

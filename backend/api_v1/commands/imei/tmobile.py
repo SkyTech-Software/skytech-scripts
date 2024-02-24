@@ -1,6 +1,7 @@
 import requests
 
-def send_request_to_tmobile(imei, email):
+
+def send_request_to_tmobile(imei: int, email: str) -> bool:
     try:
         response_tmobile = requests.post(
             url="https://tmobile-actions-api.smvg.pl/lead",
@@ -8,6 +9,5 @@ def send_request_to_tmobile(imei, email):
         )
         response_tmobile.raise_for_status()
         return True
-    except requests.RequestException as e:
-        # log error
+    except requests.RequestException:
         return False
