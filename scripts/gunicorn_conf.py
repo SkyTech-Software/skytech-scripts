@@ -1,4 +1,3 @@
-import json
 import multiprocessing
 import os
 
@@ -36,7 +35,6 @@ graceful_timeout_str = os.getenv("GRACEFUL_TIMEOUT", "120")
 timeout_str = os.getenv("TIMEOUT", "120")
 keepalive_str = os.getenv("KEEP_ALIVE", "5")
 
-# Gunicorn config variables
 loglevel = use_loglevel
 workers = web_concurrency
 bind = use_bind
@@ -48,7 +46,6 @@ timeout = int(timeout_str)
 keepalive = int(keepalive_str)
 
 
-# For debugging and testing
 log_data = {
     "loglevel": loglevel,
     "workers": workers,
@@ -58,7 +55,6 @@ log_data = {
     "keepalive": keepalive,
     "errorlog": errorlog,
     "accesslog": accesslog,
-    # Additional, non-gunicorn variables
     "workers_per_core": workers_per_core,
     "use_max_workers": use_max_workers,
     "host": host,

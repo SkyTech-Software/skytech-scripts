@@ -1,5 +1,6 @@
 import requests
 
+
 def send_request_to_orange(imei: int, email: str) -> bool:
     try:
         response_orange = requests.post(
@@ -16,6 +17,5 @@ def send_request_to_orange(imei: int, email: str) -> bool:
         )
         response_orange.raise_for_status()
         return True
-    except requests.RequestException as e:
-        # log error
+    except requests.RequestException:
         return False
