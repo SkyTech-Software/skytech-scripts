@@ -8,6 +8,7 @@ from smtplib import SMTPException
 from fastapi import HTTPException
 from email import encoders
 from fastapi import UploadFile
+from backend.schema.mail import MailResponse
 
 
 async def send_mail(target_email: str, subject: str, message: str, file: UploadFile | None = None) -> dict:
@@ -30,10 +31,10 @@ async def send_mail(target_email: str, subject: str, message: str, file: UploadF
 
     try:
         server.sendmail(settings.mailer_username, target_email, msg.as_string())
-        return True
-
+        
     except SMTPException as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send email. Error {e}")
+        return MailResponse(success=False, data="Failed to send an email.")
 
     finally:
         server.quit()
+        return MailResponse(success=True, data="Mail has been sent.")

@@ -7,8 +7,8 @@ from backend.schema.imei import ImeiInput, ImeiResponse
 router = APIRouter()
 
 
-@router.post("/check-imei")
-async def check_imei(
+@router.post("/check-operators")
+async def check_operators(
     user_input: ImeiInput, api_key: APIKey = Depends(validate_api_key)
 ) -> ImeiResponse:
     response = await check_imei_by_number(user_input.imei, user_input.email_address)

@@ -8,5 +8,4 @@ class ImeiInput(BaseModel):
 class ImeiResponse(BaseModel):
     orange: bool
     tmobile: bool
-    play: bool
     plus: bool
