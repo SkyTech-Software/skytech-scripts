@@ -6,6 +6,7 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 import zipfile
+from fastapi.exceptions import HTTPException
 
 
 def run_extractor(urls: list[str]) -> bytes:
@@ -17,7 +18,9 @@ def run_extractor(urls: list[str]) -> bytes:
                 create_csv_file(data)
                 zip_file = create_zip_file()
             except Exception as exc:
-                print(f"Generated an exception: {exc}")
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to fetch fonts: {str(exc)}"
+                )
         return zip_file
 
 
