@@ -12,12 +12,17 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
 
-  # LINTER & CODE FORMATTER #
+  # LINTER #
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.2.2
     hooks:
       - id: ruff
-      - id: ruff-format
+
+  # CODE FORMATTER #
+  - repo: https://github.com/psf/black
+    rev: 24.2.0
+    hooks:
+      - id: black
 
   # TYPE CHECKER #
   - repo: https://github.com/pre-commit/mirrors-mypy
