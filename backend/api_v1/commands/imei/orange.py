@@ -14,6 +14,7 @@ def send_request_to_orange(imei: int, email: str) -> bool:
                 "type": "DEVICE_IMEI",
                 "formComponentId": "imei_form",
             },
+            timeout=60,
         )
         response_orange.raise_for_status()
         return True
