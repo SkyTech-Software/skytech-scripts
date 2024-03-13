@@ -19,11 +19,11 @@ async def process_from_links(crawler_input: CrawlerInputLinks) -> MailResponse:
     zip_file = run_extractor(crawler_input.links)
     return send_mail(
         target_email=crawler_input.target_email,
-        subject=link_mail_response(),
-        message="please find attached .zip file.",
+        subject="Fonts Extractor",
+        message=link_mail_response(),
         file_content=zip_file,
         file_content_type="zip",
-        file_name="fonts.zip",
+        file_name="Fonts.zip",
     )
 
 
