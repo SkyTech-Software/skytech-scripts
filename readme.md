@@ -1,6 +1,6 @@
 ## SoftwareSkyTech Scripts
 
-### Description 
+### Description
 
 REST API service for hosting small scripts, connected directly with [SoftwareSkytech](https://skytechsoftware.pl/) page.
 
