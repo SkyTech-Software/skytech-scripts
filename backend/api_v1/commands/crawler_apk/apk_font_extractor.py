@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 import zipfile
 from fastapi.exceptions import HTTPException
+from bs4 import BeautifulSoup as bs
 
 
 def run_extractor(urls: list[str]) -> bytes:
@@ -75,7 +76,16 @@ def find_and_save_fonts(
     for font_file in font_files:
         original_location = font_file
         temp_font_path = os.path.join(specific_font_path, os.path.basename(font_file))
-        unzip_cmd = ["unzip", "-j", "-q", apk_path, font_file, "-d", specific_font_path]
+        unzip_cmd = [
+            "unzip",
+            "-j",
+            "-qq",
+            "-n",
+            apk_path,
+            font_file,
+            "-d",
+            specific_font_path,
+        ]
         subprocess.run(unzip_cmd)
 
         font_name = get_font_name(temp_font_path)
@@ -108,11 +118,45 @@ def create_csv_file(data: list[tuple[str, str, str, str]]) -> None:
 def create_zip_file() -> bytes:
     folder_path = "fonts"
     buffer = BytesIO()
-    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as zip_file:
+    with zipfile.ZipFile(
+        buffer, "w", compression=zipfile.ZIP_DEFLATED, strict_timestamps=False
+    ) as zip_file:
         for root, _, files in os.walk(folder_path):
             for file in files:
                 file_path = os.path.join(root, file)
                 zip_file.write(
-                    file_path, arcname=os.path.relpath(file_path, folder_path)
+                    file_path,
+                    arcname=os.path.relpath(file_path, folder_path),
                 )
     return buffer.getvalue()
+
+
+def __get_html_by_keyword(keyword: str) -> str:
+    url = f"http://play.google.com/store/search?q={keyword}&c=apps"
+
+    return requests.get(url).text
+
+
+def collect_links_by_author(keyword: str) -> list[str]:
+    """
+    This function returns a list of google play store links of the apps that
+    are written by the author
+
+    :param keyword: The author's name
+    """
+    html = __get_html_by_keyword(keyword)
+    parsed = bs(html, "html.parser")
+    containers = parsed.select("a.Si6A0c")
+    links = []
+    for container in containers:
+        href = container.get("href")
+        if href is None:
+            continue
+        entries = container.select("div.cXFu1")
+        span = entries[0].select("span")
+        author = span[1].contents[0]
+        if str(author).lower() == keyword.lower():
+            id = href.split("id=")[-1]
+            links.append(f"https://play.google.com/store/apps/details?id={id}")
+
+    return links
