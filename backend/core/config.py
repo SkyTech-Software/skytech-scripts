@@ -3,6 +3,7 @@ from os import environ
 
 
 class Settings(BaseSettings):
+    app_env: str = environ["APP_ENV"]
     api_v1_str: str = "/scripts/api/v1"
     project_name: str = "skytech-scripts"
     docs_url: str = "/api/docs"

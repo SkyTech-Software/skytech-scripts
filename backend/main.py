@@ -6,7 +6,7 @@ from backend.core.config import settings
 app = FastAPI(
     title=settings.project_name,
     openapi_url="/scripts/api/openapi.json",
-    docs_url="/scripts/api/docs",
+    docs_url="/scripts/api/docs" if settings.app_env == "LOCAL" else None,
     dependencies=[Depends(validate_api_key)],
 )
 
