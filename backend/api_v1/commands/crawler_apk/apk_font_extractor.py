@@ -8,31 +8,48 @@ import zipfile
 from bs4 import BeautifulSoup as bs
 import asyncio
 import shutil
+from typing import Any
+
 
 async def run_extractor(urls: list[str]) -> bytes:
     fonts_save_path = "./fonts"
     list_of_paths = await download_all_apk(urls)
-    data_to_save = [await process_apk(path_to_apk, fonts_save_path) for path_to_apk in list_of_paths]
+    data_to_save = [
+        await process_apk(path_to_apk, fonts_save_path) for path_to_apk in list_of_paths
+    ]
     await create_csv_file(data_to_save)
     zip_file = await create_zip_file()
-    shutil.rmtree("./fonts")
-    [os.remove(file) for file in os.listdir('.') if file.endswith(".apk")]
-    print(os.listdir())
+    await remove_files()
     return zip_file
 
 
-async def process_apk(path_to_apk: str, fonts_save_path:str) -> list[tuple[str, str, str, str]]:
+async def remove_files() -> None:
+    for file in os.listdir("."):
+        if file.endswith(".apk"):
+            os.remove(file)
+    shutil.rmtree("./fonts")
+
+
+async def process_apk(path_to_apk: str, fonts_save_path: str) -> list[dict[str, Any]]:
     fonts = await find_and_save_fonts(path_to_apk, fonts_save_path)
-    return [{"Name": path_to_apk, "File Name": font[0], "Font Name":  font[1], "Location": font[2]} for font in fonts]
+    return [
+        {
+            "Name": path_to_apk,
+            "File Name": font[0],
+            "Font Name": font[1],
+            "Location": font[2],
+        }
+        for font in fonts
+    ]
 
 
-async def download_all_apk(urls: list[str]) -> str:
+async def download_all_apk(urls: list[str]) -> list[str]:
     coros = [download_apk_file(url) for url in urls]
     list_of_app_paths = await asyncio.gather(*coros)
     return list_of_app_paths
-    
 
-async def download_apk_file(url:str ):
+
+async def download_apk_file(url: str) -> str:
     url = await transform_link_to_apkpure(url)
     file_name = url.split("/")[-1] + ".apk"
     full_path = os.path.join("./", file_name)
@@ -41,6 +58,7 @@ async def download_apk_file(url:str ):
     with open(full_path, "wb") as file:
         file.write(response.content)
     return full_path
+
 
 async def transform_link_to_apkpure(google_play_link: str) -> str:
     if "https://d.apkpure.net/b/APK/" in google_play_link:
@@ -103,17 +121,18 @@ async def get_font_name(font_path: str) -> str:
                 else:
                     name = record.string.decode("latin-1")
                 break
-    except Exception as exc:
+    except Exception:
         name = "NOT FOUND."
         pass
     return name
 
-async def create_csv_file(data: list[tuple[str, str, str, str]]) -> None:
-    merged_list = []
+
+async def create_csv_file(data: list[list[dict[str, Any]]]) -> None:
+    merged_list: list[dict[str, Any]] = []
     for sublist in data:
         merged_list.extend(sublist)
     df = pd.DataFrame(merged_list)
-    df.to_csv('fonts/summary.csv', index=False)
+    df.to_csv("fonts/summary.csv", index=False)
 
 
 async def create_zip_file() -> bytes:
