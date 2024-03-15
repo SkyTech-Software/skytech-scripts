@@ -1,57 +1,55 @@
 import os
-import csv
+import pandas as pd
 import requests
 from fontTools.ttLib import TTFont
 import subprocess
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 import zipfile
-from fastapi.exceptions import HTTPException
 from bs4 import BeautifulSoup as bs
+import asyncio
+import shutil
 
-
-def run_extractor(urls: list[str]) -> bytes:
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_url = {executor.submit(process_apk, url): url for url in urls}
-        for future in as_completed(future_to_url):
-            try:
-                data = future.result()
-                create_csv_file(data)
-                zip_file = create_zip_file()
-            except Exception as exc:
-                raise HTTPException(
-                    status_code=500, detail=f"Failed to fetch fonts: {str(exc)}"
-                )
-        return zip_file
-
-
-def process_apk(target_url: str) -> list[tuple[str, str, str, str]]:
-    save_path = "./"
+async def run_extractor(urls: list[str]) -> bytes:
     fonts_save_path = "./fonts"
-    apk_file_name = download_apk(target_url, save_path)
-    fonts = find_and_save_fonts(apk_file_name, fonts_save_path)
-    return [(target_url, font[0], font[1], font[2]) for font in fonts]
+    list_of_paths = await download_all_apk(urls)
+    data_to_save = [await process_apk(path_to_apk, fonts_save_path) for path_to_apk in list_of_paths]
+    await create_csv_file(data_to_save)
+    zip_file = await create_zip_file()
+    shutil.rmtree("./fonts")
+    [os.remove(file) for file in os.listdir('.') if file.endswith(".apk")]
+    print(os.listdir())
+    return zip_file
 
 
-def download_apk(url: str, save_path: str) -> str:
-    url = transform_link_to_apkpure(url)
+async def process_apk(path_to_apk: str, fonts_save_path:str) -> list[tuple[str, str, str, str]]:
+    fonts = await find_and_save_fonts(path_to_apk, fonts_save_path)
+    return [{"Name": path_to_apk, "File Name": font[0], "Font Name":  font[1], "Location": font[2]} for font in fonts]
+
+
+async def download_all_apk(urls: list[str]) -> str:
+    coros = [download_apk_file(url) for url in urls]
+    list_of_app_paths = await asyncio.gather(*coros)
+    return list_of_app_paths
+    
+
+async def download_apk_file(url:str ):
+    url = await transform_link_to_apkpure(url)
     file_name = url.split("/")[-1] + ".apk"
-    full_path = os.path.join(save_path, file_name)
+    full_path = os.path.join("./", file_name)
 
     response = requests.get(url)
     with open(full_path, "wb") as file:
         file.write(response.content)
     return full_path
 
-
-def transform_link_to_apkpure(google_play_link: str) -> str:
+async def transform_link_to_apkpure(google_play_link: str) -> str:
     if "https://d.apkpure.net/b/APK/" in google_play_link:
         return google_play_link
     app_id = google_play_link.split("id=")[-1]
     return f"https://d.apkpure.net/b/APK/{app_id}?version=latest"
 
 
-def find_and_save_fonts(
+async def find_and_save_fonts(
     apk_path: str, fonts_save_path: str
 ) -> list[tuple[str, str, str]]:
     apk_name = os.path.splitext(os.path.basename(apk_path))[0]
@@ -88,34 +86,37 @@ def find_and_save_fonts(
         ]
         subprocess.run(unzip_cmd)
 
-        font_name = get_font_name(temp_font_path)
+        font_name = await get_font_name(temp_font_path)
         font_data.append((os.path.basename(font_file), font_name, original_location))
 
     return font_data
 
 
-def get_font_name(font_path: str) -> str:
-    font = TTFont(font_path)
+async def get_font_name(font_path: str) -> str:
     name = ""
-    for record in font["name"].names:
-        if record.nameID == 4 and not name:
-            if b"\x00" in record.string:
-                name = record.string.decode("utf-16-be")
-            else:
-                name = record.string.decode("latin-1")
-            break
+    try:
+        font = TTFont(font_path)
+        for record in font["name"].names:
+            if record.nameID == 4 and not name:
+                if b"\x00" in record.string:
+                    name = record.string.decode("utf-16-be")
+                else:
+                    name = record.string.decode("latin-1")
+                break
+    except Exception as exc:
+        name = "NOT FOUND."
+        pass
     return name
 
+async def create_csv_file(data: list[tuple[str, str, str, str]]) -> None:
+    merged_list = []
+    for sublist in data:
+        merged_list.extend(sublist)
+    df = pd.DataFrame(merged_list)
+    df.to_csv('fonts/summary.csv', index=False)
 
-def create_csv_file(data: list[tuple[str, str, str, str]]) -> None:
-    with open("fonts/summary.csv", "w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(["URL/Name", "File Name", "Font Name", "Location"])
-        for row in data:
-            writer.writerow(row)
 
-
-def create_zip_file() -> bytes:
+async def create_zip_file() -> bytes:
     folder_path = "fonts"
     buffer = BytesIO()
     with zipfile.ZipFile(

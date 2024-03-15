@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "SkyTech-Scripts"
-version = "0.0.2"
+version = "0.0.3"
 description = "Runner for custom scripts."
 authors = ["SkyTechSoftware"]
 
@@ -15,6 +15,7 @@ gunicorn = "20.1.0"
 fonttools = "4.49.0"
 beautifulsoup4 = "4.12.3"
 requests = "2.31.0"
+pandas = "2.2.1"
 
 [tool.poetry.dev-dependencies]
 

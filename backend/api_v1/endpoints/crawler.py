@@ -16,7 +16,7 @@ router = APIRouter()
 
 @router.post("/process-from-links")
 async def process_from_links(crawler_input: CrawlerInputLinks) -> MailResponse:
-    zip_file = run_extractor(crawler_input.links)
+    zip_file = await run_extractor(crawler_input.links)
     return send_mail(
         target_email=crawler_input.target_email,
         subject="Fonts Extractor",
@@ -30,12 +30,12 @@ async def process_from_links(crawler_input: CrawlerInputLinks) -> MailResponse:
 @router.post("/process-from-keyword")
 async def process_from_keyword(crawler_input: CrawlerInputKeyword) -> MailResponse:
     links = collect_links_by_author(crawler_input.keyword)
-    zip_file = run_extractor(links)
+    zip_file = await run_extractor(links)
     return send_mail(
         target_email=crawler_input.target_email,
-        subject="fonts extractor",
+        subject="Fonts Extractor",
         message=keyword_mail_response(crawler_input.keyword),
         file_content=zip_file,
         file_content_type="zip",
-        file_name="fonts.zip",
+        file_name="Fonts.zip",
     )
