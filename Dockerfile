@@ -30,7 +30,7 @@ COPY ./scripts/gunicorn_conf.py /gunicorn_conf.py
 COPY ./scripts/start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh
 
-RUN apt-get update && apt-get upgrade && apt-get install aapt -y && apt-get install unzip -y
+RUN --mount=type=cache,target=/var/cache/apt apt-get update && apt-get upgrade && apt-get install aapt -y && apt-get install unzip -y
 
 FROM build AS development
 
