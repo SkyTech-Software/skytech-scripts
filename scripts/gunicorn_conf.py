@@ -1,8 +1,8 @@
 import multiprocessing
 import os
 
-workers_per_core_str = os.getenv("WORKERS_PER_CORE", "1")
-max_workers_str = os.getenv("MAX_WORKERS")
+workers_per_core_str = 4
+max_workers_str = 4
 use_max_workers = None
 if max_workers_str:
     use_max_workers = int(max_workers_str)
