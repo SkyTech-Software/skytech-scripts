@@ -3,7 +3,7 @@ services:
   api:
     image: softwareskytech/skytech-scripts:prod
     container_name: skytech-scripts
-    command: ["gunicorn", "--keyfile", "/certs/privkey.pem", "--certfile","/certs/fullchain.pem" "-b", "0.0.0.0:8000", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "backend.main:app"]
+    command: ["gunicorn", "--keyfile", "/certs/privkey.pem", "--certfile","/certs/fullchain.pem", "-b", "0.0.0.0:8000", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "backend.main:app"]
     ports:
       - "8999:8000"
     env_file:
