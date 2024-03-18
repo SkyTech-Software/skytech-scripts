@@ -10,3 +10,8 @@ class Mail(BaseModel):
 class MailResponse(BaseModel):
     success: bool
     data: str
+
+
+class RequestAccepted(BaseModel):
+    data: str
+    # remaing_apps: int

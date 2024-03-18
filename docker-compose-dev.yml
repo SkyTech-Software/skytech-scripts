@@ -14,3 +14,35 @@ services:
       - .env
     ports:
       - "8020:80"
+    networks:
+      - redis_network
+
+  redis:
+    image: redis:7.2.4
+    container_name: redis
+    networks:
+      - redis_network
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+
+
+  celery-worker:
+    build:
+        context: .
+        dockerfile: Dockerfile
+        target: development
+    command: sh /app/start-celery-worker.sh
+    networks:
+      - redis_network
+    depends_on:
+      - redis
+    volumes:
+      - ./backend:/app/backend
+    env_file:
+      - .env
+
+networks:
+  redis_network:
+    name: redis_network
