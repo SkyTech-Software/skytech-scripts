@@ -23,11 +23,8 @@ services:
       - .env
 
   celery-worker:
-    build:
-        context: .
-        dockerfile: Dockerfile
-        target: production
-    command: sh /app/start-celery-worker.sh
+    image: softwareskytech/skytech-scripts:prod
+    command: sh /app/start-celery-worker-prod.sh
     networks:
       - redis_network
     depends_on:
