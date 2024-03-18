@@ -4,4 +4,4 @@
 set -o errexit
 set -o nounset
 
-exec python -m celery -A backend.core.celery_config worker -E --loglevel=info -Q tasks -P gevent -c 4
+exec python -m celery -A app.backend.core.celery_config worker -E --loglevel=info -Q tasks -P gevent -c 4
