@@ -3,7 +3,7 @@ services:
   api:
     image: softwareskytech/skytech-scripts:prod
     container_name: skytech-scripts
-    command: ["gunicorn", "--keyfile", "/certs/privkey.pem", "--certfile","/certs/fullchain.pem" "-b", "0.0.0.0:8000", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "backend.main:app"]
+    command: ["gunicorn", "--keyfile", "/certs/privkey.pem", "--certfile","/certs/fullchain.pem", "-b", "0.0.0.0:8000", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "backend.main:app"]
     ports:
       - "8999:8000"
     env_file:
@@ -11,3 +11,29 @@ services:
     volumes:
       - /etc/letsencrypt/ssl/fullchain.pem:/certs/fullchain.pem
       - /etc/letsencrypt/ssl/privkey.pem:/certs/privkey.pem
+    networks:
+      - redis_network
+
+  redis:
+    image: redis:7.2.4
+    container_name: redis
+    networks:
+      - redis_network
+    env_file:
+      - .env
+
+  celery-worker:
+    image: softwareskytech/skytech-scripts:prod
+    command: sh /app/start-celery-worker-prod.sh
+    networks:
+      - redis_network
+    depends_on:
+      - redis
+    volumes:
+      - ./backend:/app/backend
+    env_file:
+      - .env
+
+networks:
+  redis_network:
+    name: redis_network

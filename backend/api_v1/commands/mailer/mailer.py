@@ -16,7 +16,6 @@ def send_mail(
     file_content: bytes | None = None,
     file_name: str | None = None,
 ) -> MailResponse:
-
     server = smtplib.SMTP(settings.smtp_server, int(settings.smtp_port))
     server.starttls()
     server.login(settings.mailer_username, settings.mailer_password)
