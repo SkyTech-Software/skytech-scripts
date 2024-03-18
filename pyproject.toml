@@ -16,8 +16,12 @@ fonttools = "4.49.0"
 beautifulsoup4 = "4.12.3"
 requests = "2.31.0"
 pandas = "2.2.1"
+redis = "5.0.3"
+celery = "5.3.6"
+gevent = "24.2.1"
 
 [tool.poetry.dev-dependencies]
+watchdog = "4.0.0"
 
 [build-system]
 requires = ["poetry-core"]

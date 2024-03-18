@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     smtp_port: str = environ["SMTP_PORT"]
     mailer_username: str = environ["MAILER_USERNAME"]
     mailer_password: str = environ["MAILER_PASSWORD"]
+    celery_broker_url: str = environ["CELERY_BROKER_URL"]
+    celery_result_backend_url: str = environ["CELERY_RESULT_BACKEND_URL"]
 
 
 settings = Settings()
