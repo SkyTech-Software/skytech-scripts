@@ -4,3 +4,5 @@
 .mypy_cache
 .pytest_cache
 .ruff_cache
+package.lock
+node_modules

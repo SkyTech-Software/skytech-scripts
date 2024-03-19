@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/var/cache/apt pip install "poetry==$POETRY_VERSIO
 WORKDIR /app
 
 COPY ./backend /app/backend/
+COPY ./wrappers /app/wrappers/
 COPY ./pyproject.toml .
 
 COPY ./scripts/start.sh /start.sh
@@ -31,7 +32,11 @@ COPY ./scripts/start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh
 
 
-RUN --mount=type=cache,target=/var/cache/apt apt-get update && apt-get upgrade && apt-get install aapt -y && apt-get install unzip -y
+RUN --mount=type=cache,target=/var/cache/apt apt-get update && apt-get upgrade && apt-get install aapt -y && apt-get install unzip -y && apt-get install nodejs npm -y
+
+WORKDIR /app/wrappers/google-play-scraper-wrapper
+RUN npm i
+WORKDIR /app
 
 FROM build AS development
 

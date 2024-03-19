@@ -5,7 +5,6 @@ from fontTools.ttLib import TTFont
 import subprocess
 from io import BytesIO
 import zipfile
-from bs4 import BeautifulSoup as bs
 import shutil
 from typing import Any
 
@@ -149,32 +148,14 @@ def create_zip_file() -> bytes:
     return buffer.getvalue()
 
 
-def __get_html_by_keyword(keyword: str) -> str:
-    url = f"http://play.google.com/store/search?q={keyword}&c=apps"
-
-    return requests.get(url).text
-
-
 def collect_links_by_author(keyword: str) -> list[str]:
-    """
-    This function returns a list of google play store links of the apps that
-    are written by the author
+    out = subprocess.check_output(
+        ["node", "/app/wrappers/google-play-scraper-wrapper/src/index.js", keyword]
+    )
 
-    :param keyword: The author's name
-    """
-    html = __get_html_by_keyword(keyword)
-    parsed = bs(html, "html.parser")
-    containers = parsed.select("a.Si6A0c")
-    links = []
-    for container in containers:
-        href = container.get("href")
-        if href is None:
-            continue
-        entries = container.select("div.cXFu1")
-        span = entries[0].select("span")
-        author = span[1].contents[0]
-        if str(author).lower() == keyword.lower():
-            id = href.split("id=")[-1]
-            links.append(f"https://play.google.com/store/apps/details?id={id}")
+    result = []
+    for line in out.decode("utf-8").split("\n"):
+        if line != "":
+            result.append(f"https://d.apkpure.net/b/APK/{line}?version=latest")
 
-    return links
+    return result
