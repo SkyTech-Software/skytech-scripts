@@ -25,13 +25,13 @@ async def process_from_links(crawler_input: CrawlerInputLinks) -> RequestAccepte
     return RequestAccepted(data="Request is being processed.")
 
 
-@router.post("/process-from-keyword")
+@router.post("/process-from-keywords")
 async def process_from_keyword(crawler_input: CrawlerInputKeyword) -> RequestAccepted:
-    links = collect_links_by_author(crawler_input.keyword)
+    links = collect_links_by_author(crawler_input.keywords)
     if not links:
         return RequestAccepted(data="No links found.")
 
-    mail_response = keyword_mail_response(crawler_input.keyword)
+    mail_response = keyword_mail_response(crawler_input.keywords)
     run_custom_task.delay(
         target_email=str(crawler_input.target_email),
         urls=links,
