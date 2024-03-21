@@ -7,25 +7,21 @@ from io import BytesIO
 import zipfile
 import shutil
 from typing import Any
+from uuid import uuid4
 
 
 def run_extractor(urls: list[str]) -> bytes:
-    fonts_save_path = "./fonts"
-    list_of_paths = download_all_apk(urls)
+    work_dir = f"./{uuid4()}"
+    os.mkdir(work_dir)
+    fonts_save_path = f"{work_dir}/fonts"
+    list_of_paths = download_all_apk(urls, work_dir)
     data_to_save = [
         process_apk(path_to_apk, fonts_save_path) for path_to_apk in list_of_paths
     ]
-    create_csv_file(data_to_save)
-    zip_file = create_zip_file()
-    remove_files()
+    create_csv_file(data_to_save, work_dir)
+    zip_file = create_zip_file(work_dir)
+    shutil.rmtree(work_dir)
     return zip_file
-
-
-def remove_files() -> None:
-    for file in os.listdir("."):
-        if file.endswith(".apk"):
-            os.remove(file)
-    shutil.rmtree("./fonts")
 
 
 def process_apk(path_to_apk: str, fonts_save_path: str) -> list[dict[str, Any]]:
@@ -41,15 +37,15 @@ def process_apk(path_to_apk: str, fonts_save_path: str) -> list[dict[str, Any]]:
     ]
 
 
-def download_all_apk(urls: list[str]) -> list[str]:
-    list_of_app_paths = [download_apk_file(url) for url in urls]
+def download_all_apk(urls: list[str], work_dir: str) -> list[str]:
+    list_of_app_paths = [download_apk_file(url, work_dir) for url in urls]
     return list_of_app_paths
 
 
-def download_apk_file(url: str) -> str:
+def download_apk_file(url: str,work_dir:str) -> str:
     url = transform_link_to_apkpure(url)
     file_name = url.split("/")[-1] + ".apk"
-    full_path = os.path.join("./", file_name)
+    full_path = os.path.join(work_dir, file_name)
 
     response = requests.get(url)
     with open(full_path, "wb") as file:
@@ -124,16 +120,16 @@ def get_font_name(font_path: str) -> str:
     return name
 
 
-def create_csv_file(data: list[list[dict[str, Any]]]) -> None:
+def create_csv_file(data: list[list[dict[str, Any]]], work_dir) -> None:
     merged_list: list[dict[str, Any]] = []
     for sublist in data:
         merged_list.extend(sublist)
     df = pd.DataFrame(merged_list)
-    df.to_csv("fonts/summary.csv", index=False)
+    df.to_csv(f"{work_dir}/fonts/summary.csv", index=False)
 
 
-def create_zip_file() -> bytes:
-    folder_path = "fonts"
+def create_zip_file(work_dir: str) -> bytes:
+    folder_path = f"{work_dir}/fonts"
     buffer = BytesIO()
     with zipfile.ZipFile(
         buffer, "w", compression=zipfile.ZIP_DEFLATED, strict_timestamps=False
