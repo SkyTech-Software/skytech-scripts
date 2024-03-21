@@ -8,4 +8,4 @@ class CrawlerInputLinks(BaseModel):
 
 class CrawlerInputKeyword(BaseModel):
     target_email: str
-    keyword: str
+    keywords: list[str]

@@ -148,14 +148,15 @@ def create_zip_file() -> bytes:
     return buffer.getvalue()
 
 
-def collect_links_by_author(keyword: str) -> list[str]:
-    out = subprocess.check_output(
-        ["node", "/app/wrappers/google-play-scraper-wrapper/src/index.js", keyword]
-    )
-
+def collect_links_by_author(keywords: list[str]) -> list[str]:
     result = []
-    for line in out.decode("utf-8").split("\n"):
-        if line != "":
-            result.append(f"https://d.apkpure.net/b/APK/{line}?version=latest")
+    for keyword in keywords:
+        out = subprocess.check_output(
+            ["node", "/app/wrappers/google-play-scraper-wrapper/src/index.js", keyword]
+        )
+
+        for line in out.decode("utf-8").split("\n"):
+            if line != "":
+                result.append(f"https://d.apkpure.net/b/APK/{line}?version=latest")
 
     return result

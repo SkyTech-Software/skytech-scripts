@@ -1,6 +1,6 @@
-def keyword_mail_response(keyword: str) -> str:
+def keyword_mail_response(keywords: list[str]) -> str:
     return f"""Dzień dobry,
-W załączniku przesyłamy .zip z fontami od Dewelopera {keyword}
+W załączniku przesyłamy .zip z fontami od Deweloperów: {', '.join([item for item in keywords])}
 
 
 Pozdrawiamy
