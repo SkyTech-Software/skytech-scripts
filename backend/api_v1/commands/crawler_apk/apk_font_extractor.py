@@ -42,11 +42,10 @@ def download_all_apk(urls: list[str], work_dir: str) -> list[str]:
     return list_of_app_paths
 
 
-def download_apk_file(url: str,work_dir:str) -> str:
+def download_apk_file(url: str, work_dir: str) -> str:
     url = transform_link_to_apkpure(url)
     file_name = url.split("/")[-1] + ".apk"
     full_path = os.path.join(work_dir, file_name)
-
     response = requests.get(url)
     with open(full_path, "wb") as file:
         file.write(response.content)
@@ -120,10 +119,12 @@ def get_font_name(font_path: str) -> str:
     return name
 
 
-def create_csv_file(data: list[list[dict[str, Any]]], work_dir) -> None:
+def create_csv_file(data: list[list[dict[str, Any]]], work_dir: str) -> None:
     merged_list: list[dict[str, Any]] = []
     for sublist in data:
         merged_list.extend(sublist)
+    if not merged_list:
+        merged_list.append({"0": "Nie znaleziono czcionek"})
     df = pd.DataFrame(merged_list)
     df.to_csv(f"{work_dir}/fonts/summary.csv", index=False)
 

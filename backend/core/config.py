@@ -14,6 +14,13 @@ class Settings(BaseSettings):
     mailer_password: str = environ["MAILER_PASSWORD"]
     celery_broker_url: str = environ["CELERY_BROKER_URL"]
     celery_result_backend_url: str = environ["CELERY_RESULT_BACKEND_URL"]
+    aws_access_point_alias: str = environ["AWS_ACCESS_POINT_ALIAS"]
+    aws_access_key_id: str = environ["AWS_ACCESS_KEY_ID"]
+    aws_secret_access_key: str = environ["AWS_SECRET_ACCESS_KEY"]
+    aws_region: str = environ["AWS_REGION"]
+    aws_bucket_name: str = environ["AWS_BUCKET_NAME"]
+    aws_link_exp_time: str = environ["AWS_LINK_EXP_TIME"]
+    pg_database_url: str = environ["PG_DATABASE_URL"]
 
 
 settings = Settings()
