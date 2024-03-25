@@ -16,7 +16,9 @@ services:
       - "8020:80"
     networks:
       - redis_network
-
+      - postgres
+    depends_on:
+      - db
   redis:
     image: redis:7.2.4
     container_name: redis
@@ -36,13 +38,35 @@ services:
     command: sh /app/start-celery-worker.sh
     networks:
       - redis_network
+      - postgres
+
     depends_on:
       - redis
+      - db
     volumes:
       - ./backend:/app/backend
     env_file:
       - .env
 
+  db:
+      image: postgres:16
+      container_name: postgres-db
+      environment:
+        - POSTGRES_USER=user
+        - POSTGRES_PASSWORD=password
+        - POSTGRES_DB=software-skytech
+      ports:
+        - "5432:5432"
+      volumes:
+        - db-data:/var/lib/postgresql/data
+      networks:
+        - postgres
+
+volumes:
+  db-data: {}
+
 networks:
   redis_network:
     name: redis_network
+  postgres:
+    name: postgres

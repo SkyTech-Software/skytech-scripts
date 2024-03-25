@@ -32,7 +32,9 @@ COPY ./scripts/start-reload.sh /start-reload.sh
 RUN chmod +x /start-reload.sh
 
 
-RUN --mount=type=cache,target=/var/cache/apt apt-get update && apt-get upgrade && apt-get install aapt -y && apt-get install unzip -y && apt-get install nodejs npm -y
+RUN --mount=type=cache,target=/var/cache/apt apt-get update && apt-get upgrade -y && apt-get install aapt -y && apt-get install unzip -y
+
+RUN --mount=type=cache,target=/var/cache/node_modules apt-get install nodejs npm -y
 
 WORKDIR /app/wrappers/google-play-scraper-wrapper
 RUN npm i
