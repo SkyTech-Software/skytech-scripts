@@ -47,8 +47,11 @@ FROM build AS development
 
 COPY ./scripts/celery/start-celery-worker /app/start-celery-worker.sh
 RUN chmod +x /app/start-celery-worker.sh
+RUN --mount=type=cache,target="$POETRY_CACHE_DIR" poetry install --no-interaction --no-ansi
 
 FROM build AS production
 
 COPY ./scripts/celery/start-celery-worker-prod /app/start-celery-worker-prod.sh
 RUN chmod +x /app/start-celery-worker-prod.sh
+
+RUN poetry install --no-interaction --no-ansi --no-dev
