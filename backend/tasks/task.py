@@ -11,6 +11,7 @@ from uuid import uuid4
 from backend.db.logging import add_log
 from time import time
 from functools import wraps
+from datetime import datetime
 
 
 def log_task(func):  # type: ignore
@@ -52,15 +53,19 @@ def log_task(func):  # type: ignore
 @celery.task(bind=True, name="analyze_apk_from_links", queue="tasks", serializer="json")  # type: ignore
 @log_task  # type: ignore
 def analyze_apk_from_links(self: Any, target_email: str, links: list[str]) -> bool:
-    zip_file = run_extractor(links)
+
+    zip_file, csv_file = run_extractor(links)
     aws_storage_link = upload_file_to_aws_storage(zip_file, f"Fonts_{uuid4()}.zip")
     mail_message = generate_mail_body_apk(aws_storage_link)
+    current_time = datetime.now().strftime("%Y/%m/%d_%H:%M:%S")
     send_mail(
         target_email=target_email,
         subject="Fonts Extractor",
         message=mail_message,
+        file_content_type="text/csv",
+        file_content=csv_file,
+        file_name=f"Summary_{current_time}.csv",
     )
-
     return True
 
 
@@ -72,12 +77,18 @@ def analyze_apk_from_keywords(
     urls = collect_links_by_author(keywords)
     if not urls:
         return False
-    zip_file = run_extractor(urls)
+    zip_file, csv_file = run_extractor(urls)
     aws_storage_link = upload_file_to_aws_storage(zip_file, f"Fonts_{uuid4()}.zip")
     mail_message = generate_mail_body_apk(aws_storage_link)
 
+    current_time = datetime.now().strftime("%Y/%m/%d_%H:%M:%S")
     send_mail(
-        target_email=target_email, subject="Fonts Extractor", message=mail_message
+        target_email=target_email,
+        subject="Fonts Extractor",
+        message=mail_message,
+        file_content_type="text/csv",
+        file_content=csv_file,
+        file_name=f"Summary_{current_time}.csv",
     )
 
     return True

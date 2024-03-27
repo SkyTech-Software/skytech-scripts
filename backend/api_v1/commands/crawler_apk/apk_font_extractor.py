@@ -3,53 +3,59 @@ import pandas as pd
 import requests
 from fontTools.ttLib import TTFont
 import subprocess
-from io import BytesIO
+from io import BytesIO, StringIO
 import zipfile
 import shutil
+import re
 from typing import Any
 from uuid import uuid4
+from backend.db.logging import add_log
 
 
-def run_extractor(urls: list[str]) -> bytes:
+def run_extractor(urls: list[str]) -> tuple[bytes, str]:
     work_dir = f"./{uuid4()}"
     os.mkdir(work_dir)
     fonts_save_path = f"{work_dir}/fonts"
-    list_of_paths = download_all_apk(urls, work_dir)
-    data_to_save = [
-        process_apk(path_to_apk, fonts_save_path) for path_to_apk in list_of_paths
-    ]
-    create_csv_file(data_to_save, work_dir)
+    data_to_save = []
+    for url in urls:
+        path_to_apk = download_apk_file(url, work_dir)
+        data_to_save.append(process_apk(path_to_apk, fonts_save_path))
+    csv_file = create_csv_file(data_to_save, work_dir)
     zip_file = create_zip_file(work_dir)
     shutil.rmtree(work_dir)
-    return zip_file
+    return zip_file, csv_file
 
 
-def process_apk(path_to_apk: str, fonts_save_path: str) -> list[dict[str, Any]]:
-    fonts = find_and_save_fonts(path_to_apk, fonts_save_path)
-    return [
-        {
-            "Name": path_to_apk,
-            "File Name": font[0],
-            "Font Name": font[1],
-            "Location": font[2],
-        }
-        for font in fonts
-    ]
+def process_apk(path_to_apk: str | None, fonts_save_path: str) -> list[dict[str, Any]]:
+    if path_to_apk:
+        fonts = find_and_save_fonts(path_to_apk, fonts_save_path)
+        return [
+            {
+                "Name": os.path.basename(path_to_apk),
+                "File Name": font[0],
+                "Font Name": font[1],
+                "Location": font[2],
+            }
+            for font in fonts
+        ]
+    return []
 
 
-def download_all_apk(urls: list[str], work_dir: str) -> list[str]:
-    list_of_app_paths = [download_apk_file(url, work_dir) for url in urls]
-    return list_of_app_paths
-
-
-def download_apk_file(url: str, work_dir: str) -> str:
-    url = transform_link_to_apkpure(url)
-    file_name = url.split("/")[-1] + ".apk"
-    full_path = os.path.join(work_dir, file_name)
-    response = requests.get(url)
-    with open(full_path, "wb") as file:
-        file.write(response.content)
-    return full_path
+def download_apk_file(url: str, work_dir: str) -> str | None:
+    try:
+        url = transform_link_to_apkpure(url)
+        response = requests.get(url)
+        match = re.search(
+            r"(?<=filename=\").*?(?=\")", response.headers["Content-Disposition"]
+        )
+        filename = match.group() if match else ""
+        full_path = os.path.join(work_dir, filename)
+        with open(full_path, "wb") as file:
+            file.write(response.content)
+        return full_path
+    except Exception as e:
+        add_log("filename", "Failed to download/save .apk", url, None, str(e))
+        return None
 
 
 def transform_link_to_apkpure(google_play_link: str) -> str:
@@ -78,7 +84,6 @@ def find_and_save_fonts(
         or line.endswith(".woff")
         or line.endswith(".woff2")
         or line.endswith(".eot")
-        or line.endswith(".svg")
     ]
 
     for font_file in font_files:
@@ -119,7 +124,7 @@ def get_font_name(font_path: str) -> str:
     return name
 
 
-def create_csv_file(data: list[list[dict[str, Any]]], work_dir: str) -> None:
+def create_csv_file(data: list[list[dict[str, Any]]], work_dir: str) -> str:
     merged_list: list[dict[str, Any]] = []
     for sublist in data:
         merged_list.extend(sublist)
@@ -127,6 +132,10 @@ def create_csv_file(data: list[list[dict[str, Any]]], work_dir: str) -> None:
         merged_list.append({"0": "Nie znaleziono czcionek"})
     df = pd.DataFrame(merged_list)
     df.to_csv(f"{work_dir}/fonts/summary.csv", index=False)
+    in_memory_csv = StringIO()
+    df.to_csv(in_memory_csv, index=False)
+    csv_string = in_memory_csv.getvalue()
+    return csv_string
 
 
 def create_zip_file(work_dir: str) -> bytes:
