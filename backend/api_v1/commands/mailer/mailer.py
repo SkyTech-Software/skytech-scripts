@@ -13,7 +13,7 @@ def send_mail(
     subject: str,
     message: str,
     file_content_type: str | None = None,
-    file_content: bytes | None = None,
+    file_content: bytes | None | str = None,
     file_name: str | None = None,
 ) -> MailResponse:
     server = smtplib.SMTP(settings.smtp_server, int(settings.smtp_port))

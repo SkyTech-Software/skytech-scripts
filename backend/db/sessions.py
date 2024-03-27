@@ -1,4 +1,3 @@
-
 from sqlalchemy.orm import sessionmaker
 from backend.db.models import engine
 
