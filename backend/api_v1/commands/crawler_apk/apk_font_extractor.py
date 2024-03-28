@@ -20,6 +20,7 @@ def run_extractor(urls: list[str]) -> tuple[bytes, str]:
     for url in urls:
         path_to_apk = download_apk_file(url, work_dir)
         data_to_save.append(process_apk(path_to_apk, fonts_save_path))
+        os.remove(path_to_apk) if path_to_apk else None
     csv_file = create_csv_file(data_to_save, work_dir)
     zip_file = create_zip_file(work_dir)
     shutil.rmtree(work_dir)
