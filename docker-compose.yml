@@ -33,7 +33,7 @@ services:
       - ./backend:/app/backend
     env_file:
       - .env
-    cpus: "5"
+    cpus: "0.5"
 
 networks:
   redis_network:
