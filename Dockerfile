@@ -16,7 +16,7 @@ ENV APP_ENV=dev \
   PYTHONPATH=/app
 
 RUN --mount=type=cache,target=/var/cache/apt pip install "poetry==$POETRY_VERSION"
-RUN --mount=type=cache,target=/var/cache/apt apt-get update && apt-get upgrade && apt-get install aapt -y && apt-get install unzip -y && apt-get install nodejs npm -y
+RUN --mount=type=cache,target=/var/cache/apt apt-get update -y && apt-get upgrade -y && apt-get install aapt -y && apt-get install unzip -y && apt-get install nodejs npm -y
 
 WORKDIR /app
 

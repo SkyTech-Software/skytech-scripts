@@ -75,8 +75,6 @@ def analyze_apk_from_keywords(
     self: Any, target_email: str, keywords: list[str]
 ) -> bool:
     urls = collect_links_by_author(keywords)
-    if not urls:
-        return False
     zip_file, csv_file = run_extractor(urls)
     aws_storage_link = upload_file_to_aws_storage(zip_file, f"Fonts_{uuid4()}.zip")
     mail_message = generate_mail_body_apk(aws_storage_link)
