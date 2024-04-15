@@ -12,15 +12,30 @@ from uuid import uuid4
 from backend.db.logging import add_log
 
 
+font_data_mapping = {
+    0:'Copyright',
+    4 : 'Font Name',
+    5 : 'Version',
+    8 : 'Manufacturer',
+    9 : 'Designer',
+    11 : 'Designer URL',
+    13 : 'License',
+    14 : 'License Info URL',
+}
+
+
 def run_extractor(urls: list[str]) -> tuple[bytes, str]:
     work_dir = f"./{uuid4()}"
-    os.mkdir(work_dir)
     fonts_save_path = f"{work_dir}/fonts"
+    os.makedirs(fonts_save_path)
     data_to_save = []
     for url in urls:
-        path_to_apk = download_apk_file(url, work_dir)
-        data_to_save.append(process_apk(path_to_apk, fonts_save_path))
-        os.remove(path_to_apk) if path_to_apk else None
+        if not isinstance(url, list):
+            path_to_apk = download_apk_file(url, work_dir)
+            data_to_save.append(process_apk(path_to_apk, fonts_save_path))
+            os.remove(path_to_apk) if path_to_apk else None
+        else:
+            data_to_save.append(url)
     csv_file = create_csv_file(data_to_save, work_dir)
     zip_file = create_zip_file(work_dir)
     shutil.rmtree(work_dir)
@@ -31,12 +46,7 @@ def process_apk(path_to_apk: str | None, fonts_save_path: str) -> list[dict[str,
     if path_to_apk:
         fonts = find_and_save_fonts(path_to_apk, fonts_save_path)
         return [
-            {
-                "Name": os.path.basename(path_to_apk),
-                "File Name": font[0],
-                "Font Name": font[1],
-                "Location": font[2],
-            }
+            font
             for font in fonts
         ]
     return []
@@ -88,7 +98,6 @@ def find_and_save_fonts(
     ]
 
     for font_file in font_files:
-        original_location = font_file
         temp_font_path = os.path.join(specific_font_path, os.path.basename(font_file))
         unzip_cmd = [
             "unzip",
@@ -102,27 +111,24 @@ def find_and_save_fonts(
         ]
         subprocess.run(unzip_cmd)
 
-        font_name = get_font_name(temp_font_path)
-        font_data.append((os.path.basename(font_file), font_name, original_location))
+        font_data.append(extract_additional_data_from_font(temp_font_path, font_file, apk_name))
 
     return font_data
 
 
-def get_font_name(font_path: str) -> str:
-    name = ""
+def extract_additional_data_from_font(temp_font_path: str, font_file: str, apk_name: str):
+    data = {}
+    data.update({'Name': apk_name, 'File Name': os.path.basename(font_file), 'Location': font_file})
     try:
-        font = TTFont(font_path)
+        font = TTFont(temp_font_path)
         for record in font["name"].names:
-            if record.nameID == 4 and not name:
-                if b"\x00" in record.string:
-                    name = record.string.decode("utf-16-be")
-                else:
-                    name = record.string.decode("latin-1")
-                break
+            if b"\x00" in record.string:
+                data.update({font_data_mapping.get(record.nameID, f"UNKNOW: {record.nameID}"): record.string.decode("utf-16-be")})
+            else:
+                data.update({font_data_mapping.get(record.nameID, f"UNKNOW: {record.nameID}"): record.string.decode("latin-1")})
     except Exception:
-        name = "NOT FOUND."
         pass
-    return name
+    return data
 
 
 def create_csv_file(data: list[list[dict[str, Any]]], work_dir: str) -> str:
@@ -158,12 +164,26 @@ def create_zip_file(work_dir: str) -> bytes:
 def collect_links_by_author(keywords: list[str]) -> list[str]:
     result = []
     for keyword in keywords:
+        apps_by_keyword = []
         out = subprocess.check_output(
             ["node", "/app/wrappers/google-play-scraper-wrapper/src/index.js", keyword]
         )
 
         for line in out.decode("utf-8").split("\n"):
             if line != "":
-                result.append(f"https://d.apkpure.net/b/APK/{line}?version=latest")
+                link = f"https://d.apkpure.net/b/APK/{line}?version=latest"
+                apps_by_keyword.append(link)
+                result.append(link)
 
+        if not apps_by_keyword:
+            result.append(
+                [
+                    {
+                        "Name": keyword,
+                        "File Name": "Developer Not Found",
+                        "Font Name": "Developer Not Found",
+                        "Location": "Developer Not Found",
+                    }
+                ]
+            )
     return result
