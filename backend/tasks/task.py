@@ -54,7 +54,7 @@ def log_task(func):  # type: ignore
 @log_task  # type: ignore
 def analyze_apk_from_links(self: Any, target_email: str, links: list[str]) -> bool:
 
-    zip_file, csv_file = run_extractor(links)
+    zip_file, csv_file = run_extractor([{link: link} for link in links])
     aws_storage_link = upload_file_to_aws_storage(zip_file, f"Fonts_{uuid4()}.zip")
     mail_message = generate_mail_body_apk(aws_storage_link)
     current_time = datetime.now().strftime("%Y/%m/%d_%H:%M:%S")
